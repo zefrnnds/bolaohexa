@@ -1,907 +1,845 @@
-:root {
-    --green-pitch: #1a6b3c;
-    --green-dark: #0d4a2a;
-    --gold-trophy: #ffd700;
-    --gold-dark: #b8860b;
-    --blue-sky: #1e90ff;
-    --blue-dark: #0a3d7c;
-    --red-passion: #dc143c;
-    --white: #ffffff;
-    --bg-stadium: #0a1628;
-    --bg-card: rgba(26, 107, 60, 0.15);
-    --radius: 16px;
-    --shadow-gold: 0 4px 20px rgba(255, 215, 0, 0.3);
-    --shadow-green: 0 4px 20px rgba(26, 107, 60, 0.3);
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Segoe UI', 'Montserrat', Arial, sans-serif;
-    background: 
-        radial-gradient(ellipse at top, #1a6b3c 0%, transparent 50%),
-        radial-gradient(ellipse at bottom, #0a3d7c 0%, transparent 50%),
-        linear-gradient(180deg, #0a1628 0%, #1a3a5c 50%, #0a1628 100%);
-    background-attachment: fixed;
-    color: var(--white);
-    min-height: 100vh;
-    padding: 20px;
-    position: relative;
-    overflow-x: hidden;
-}
-
-/* Efeito de "grama" no fundo */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255,255,255,0.02) 50px, rgba(255,255,255,0.02) 51px);
-    pointer-events: none;
-    z-index: 0;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 40px;
-    position: relative;
-    z-index: 1;
-}
-
-h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    margin-bottom: 30px;
-    background: linear-gradient(135deg, var(--gold-trophy) 0%, #fff5b8 50%, var(--gold-trophy) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); }
-    to { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
-}
-
-/* Botões estilo "placar de estádio" */
-.toggle-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 25px;
-}
-
-.btn {
-    background: linear-gradient(135deg, var(--green-pitch) 0%, var(--green-dark) 100%);
-    border: 3px solid var(--gold-trophy);
-    color: var(--white);
-    padding: 14px 30px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-green);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
-}
-
-.btn:hover::before {
-    left: 100%;
-}
-
-.btn:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-gold);
-}
-
-.btn.active {
-    background: linear-gradient(135deg, var(--gold-trophy) 0%, var(--gold-dark) 100%);
-    color: #000;
-    border-color: var(--white);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-}
-
-/* Container de filtros */
-.filter-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: flex-end;
-    margin: 25px 0;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(26, 107, 60, 0.3), rgba(10, 61, 124, 0.3));
-    border: 2px solid var(--gold-trophy);
-    border-radius: var(--radius);
-    flex-wrap: wrap;
-    backdrop-filter: blur(10px);
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filter-group label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--gold-trophy);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.filter-group select {
-    padding: 12px 25px;
-    font-size: 1rem;
-    border-radius: 50px;
-    border: 2px solid var(--gold-trophy);
-    background: rgba(0,0,0,0.5);
-    color: var(--white);
-    cursor: pointer;
-    min-width: 220px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.filter-group select:hover {
-    border-color: var(--white);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-}
-
-.filter-group select:focus {
-    outline: none;
-    border-color: var(--gold-trophy);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-}
-
-#content {
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== PLACAR GERAL ===== */
-#ranking-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-}
-
-.card {
-    background: linear-gradient(135deg, rgba(26, 107, 60, 0.4), rgba(10, 61, 124, 0.4));
-    border-radius: var(--radius);
-    padding: 30px;
-    box-shadow: var(--shadow-green);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.card:hover::before {
-    opacity: 1;
-}
-
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-gold);
-    border-color: var(--gold-trophy);
-}
-
-.top1 {
-    background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-    color: #000;
-    border: 3px solid #fff5b8;
-}
-
-.top2 {
-    background: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 100%);
-    color: #000;
-    border: 3px solid #fff;
-}
-
-.top3 {
-    background: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%);
-    color: #fff;
-    border: 3px solid #daa520;
-}
-
-.position {
-    font-size: 3rem;
-    margin-bottom: 10px;
-    line-height: 1;
-}
-
-.card h2 {
-    font-size: 1.6rem;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.card h3 {
-    font-size: 2.2rem;
-    font-weight: 900;
-    margin-bottom: 20px;
-}
-
-.details {
-    width: 100%;
-    border-top: 2px solid rgba(255,255,255,0.2);
-    padding-top: 15px;
-    margin-top: auto;
-}
-
-.details p {
-    display: flex;
-    justify-content: space-between;
-    margin: 8px 0;
-    font-size: 1rem;
-}
-
-.details span {
-    font-weight: 700;
-}
-
-/* ===== PALPITES - RESUMO ===== */
-.palpite-summary {
-    background: linear-gradient(135deg, rgba(26, 107, 60, 0.5), rgba(10, 61, 124, 0.5));
-    border: 3px solid var(--gold-trophy);
-    border-radius: var(--radius);
-    padding: 30px;
-    margin-bottom: 30px;
-    text-align: center;
-    box-shadow: var(--shadow-gold);
-    position: relative;
-}
-
-.palpite-summary::before {
-    content: '⚽';
-    position: absolute;
-    top: -20px;
-    left: 30px;
-    font-size: 3rem;
-    animation: bounce 1s ease-in-out infinite;
-}
-
-.palpite-summary::after {
-    content: '🏆';
-    position: absolute;
-    top: -20px;
-    right: 30px;
-    font-size: 3rem;
-    animation: bounce 1s ease-in-out infinite 0.5s;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.palpite-summary h2 {
-    color: var(--gold-trophy);
-    margin-bottom: 20px;
-    font-size: 2.5rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
-/* Banner de posição no ranking */
-.ranking-position {
-    background: linear-gradient(135deg, var(--gold-trophy), var(--gold-dark));
-    color: #000;
-    padding: 15px 30px;
-    border-radius: 50px;
-    display: inline-block;
-    margin-bottom: 20px;
-    font-weight: 900;
-    font-size: 1.3rem;
-    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5); }
-    50% { box-shadow: 0 4px 30px rgba(255, 215, 0, 0.8); }
-}
-
-.summary-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.stat-box {
-    background: rgba(0,0,0,0.4);
-    padding: 20px 15px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    transition: transform 0.3s ease;
-}
-
-.stat-box:hover {
-    transform: scale(1.05);
-    border-color: var(--gold-trophy);
-}
-
-.stat-box .stat-value {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: var(--gold-trophy);
-    display: block;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.stat-box .stat-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.9;
-    margin-top: 5px;
-    display: block;
-}
-
-/* ===== TABELA DE PALPITES ===== */
-.results-container {
-    overflow-x: auto;
-    background: rgba(0,0,0,0.4);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-green);
-    padding: 20px;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-}
-
-.predictions-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 700px;
-}
-
-.predictions-table th,
-.predictions-table td {
-    padding: 15px 12px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
-}
-
-.predictions-table th {
-    background: linear-gradient(135deg, var(--green-pitch), var(--green-dark));
-    color: var(--gold-trophy);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    position: sticky;
-    top: 0;
-    border-bottom: 3px solid var(--gold-trophy);
-}
-
-.predictions-table .col-date {
-    text-align: left;
-    font-size: 0.9rem;
-    color: var(--white);
-    white-space: nowrap;
-}
-
-.predictions-table .col-match {
-    text-align: left;
-    font-weight: 600;
-    color: var(--white);
-}
-
-.predictions-table .vs {
-    color: var(--gold-trophy);
-    margin: 0 8px;
-    font-weight: 900;
-}
-
-.predictions-table .prediction {
-    font-size: 1.2rem;
-    font-weight: 900;
-    padding: 8px 16px;
-    border-radius: 10px;
-    display: inline-block;
-    min-width: 80px;
-}
-
-.predictions-table .prediction.correct {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    color: #000;
-    border: 2px solid #4ade80;
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
-}
-
-.predictions-table .prediction.partial {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #000;
-    border: 2px solid #fbbf24;
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
-}
-
-.predictions-table .prediction.wrong {
-    background: linear-gradient(135deg, #f87171, #dc143c);
-    color: #fff;
-    border: 2px solid #f87171;
-    box-shadow: 0 0 15px rgba(248, 113, 113, 0.5);
-}
-
-.predictions-table .points {
-    font-weight: 900;
-    font-size: 1.4rem;
-    color: var(--gold-trophy);
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.predictions-table .points.zero {
-    color: #6b7280;
-    opacity: 0.6;
-}
-
-.predictions-table tr:hover {
-    background: rgba(255, 215, 0, 0.05);
-}
-
-/* ===== SEÇÕES DE GRUPO ===== */
-.group-section {
-    margin-bottom: 40px;
-    background: rgba(0,0,0,0.3);
-    border-radius: var(--radius);
-    padding: 25px;
-    border: 2px solid rgba(255, 215, 0, 0.2);
-}
-
-.group-title {
-    font-size: 2.5rem;
-    color: var(--gold-trophy);
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 3px solid var(--gold-trophy);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
-.games-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.games-table th,
-.games-table td {
-    padding: 14px 12px;
-    text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.games-table th {
-    background: linear-gradient(135deg, var(--green-pitch), var(--green-dark));
-    color: var(--gold-trophy);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-.games-table .date {
-    font-weight: 600;
-    color: var(--white);
-}
-
-.games-table .teams {
-    font-size: 1.1rem;
-    color: var(--white);
-}
-
-.games-table .result {
-    text-align: center;
-    font-weight: 900;
-    color: var(--gold-trophy);
-    font-size: 1.2rem;
-}
-
-
-/* ===== BOTÃO FLUTUANTE WHATSAPP ===== */
-.whatsapp-float {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    z-index: 9999;
-    cursor: grab;
-    user-select: none;
-    width: 60px;
-    height: 60px;
-    background: #25D366;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-    animation: pulse-whatsapp 2s infinite;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.whatsapp-float:active {
-    cursor: grabbing;
-}
-
-.whatsapp-float.dragging {
-    cursor: grabbing;
-    animation: none;
-    opacity: 0.9;
-    transform: scale(1.1);
-}
-
-.whatsapp-float:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
-}
-
-.whatsapp-float svg {
-    width: 32px;
-    height: 32px;
-    pointer-events: none;
-}
-
-/* Tooltip */
-.whatsapp-tooltip {
-    position: absolute;
-    right: 70px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #333;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-.whatsapp-tooltip::after {
-    content: '';
-    position: absolute;
-    right: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 4px solid transparent;
-    border-left-color: #333;
-}
-
-.whatsapp-float:hover .whatsapp-tooltip {
-    opacity: 1;
-}
-
-@keyframes pulse-whatsapp {
-    0% {
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4),
-                    0 0 0 0 rgba(37, 211, 102, 0.7);
+document.addEventListener('DOMContentLoaded', () => {
+    const contentEl = document.getElementById('content');
+    const btnRanking = document.getElementById('btn-ranking');
+    const btnJogos = document.getElementById('btn-jogos');
+    const btnPalpites = document.getElementById('btn-palpites');
+    const btnRefresh = document.getElementById('btn-refresh');
+    const filterContainer = document.getElementById('filter-container');
+    const selectParticipant = document.getElementById('select-participant');
+    const selectGroup = document.getElementById('select-group');
+    
+    // ⚠️ COLE AQUI A NOVA URL DO APPS SCRIPT
+    const API_BASE = 'https://script.google.com/macros/s/AKfycby62NI1pid2BY6Y61RjFfYf3T-hJxNe9sKd86gaJ8aqhMTzsaFYvvWWwbHWIgsllroU/exec';
+    
+    let currentView = null;
+    let resultadosCache = {};
+    let palpitesData = {};
+    let placarGeralCache = null;
+    let carregandoEmBackground = false;
+    const carregandoAgora = {};
+    const falhasCarregamento = {};
+
+    const participantesMap = {
+        'Robson': 'ROBSON',
+        'AJR': 'JUNIOR (JR)',
+        'GJR': 'JUNINHO',
+        'MARC': 'MARCELLA',
+        'ANA': 'PAULA',
+        'PEDR': 'PEDRO',
+        'RODR': 'RODRIGO',
+        'GREI': 'GREISON',
+        'ROG': 'ROGERIO',
+        'ROM': 'ROMULO',
+        'REGINALDINHO': 'REGINALDINHO',
+        'RICARDINHO': 'RICARDINHO',
+        'REGINALDO': 'REGINALDO'
+    };
+
+    // Mapeamento reverso: nome exibido → chave da aba
+    const nomeParaChave = {};
+    Object.entries(participantesMap).forEach(([chave, nome]) => {
+        nomeParaChave[nome] = chave;
+        nomeParaChave[nome.replace(/\s*\(.*\)\s*/g, '').trim()] = chave;
+        nomeParaChave[chave.toUpperCase()] = chave;
+        nomeParaChave[chave] = chave;
+    });
+
+    const showLoading = (msg = '⏳ Carregando dados... 🏟️') => {
+        contentEl.innerHTML = `<p class="loading">${msg}</p>`;
+    };
+
+    const showError = (msg) => {
+        contentEl.innerHTML = `<p class="error">❌ ${msg}</p>`;
+    };
+
+    // ✅ NORMALIZAÇÃO DE DADOS - Renomeia coluna de data automaticamente
+    function normalizarDados(dados, nomeAba) {
+        if (!dados || dados.length === 0) return dados;
+        
+        const primeiraLinha = dados[0];
+        const colunas = Object.keys(primeiraLinha);
+        
+        // Procura coluna de data
+        let colunaData = null;
+        
+        if (colunas.includes('DATA_HORA')) {
+            colunaData = 'DATA_HORA';
+        } else if (colunas.includes(nomeAba)) {
+            colunaData = nomeAba;
+        } else {
+            for (const col of colunas) {
+                const valor = primeiraLinha[col];
+                if (valor && typeof valor === 'string') {
+                    if (valor.includes('GRUPO') || 
+                        /\d{2}\/\d{2}\/\d{4}/.test(valor) ||
+                        col.toLowerCase().includes('data')) {
+                        colunaData = col;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Renomeia coluna se necessário
+        if (colunaData && colunaData !== 'DATA_HORA') {
+            dados = dados.map(row => {
+                const newRow = {...row};
+                newRow['DATA_HORA'] = newRow[colunaData];
+                if (colunaData !== 'DATA_HORA') {
+                    delete newRow[colunaData];
+                }
+                return newRow;
+            });
+        }
+        
+        return dados;
     }
-    70% {
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4),
-                    0 0 0 15px rgba(37, 211, 102, 0);
-    }
-    100% {
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4),
-                    0 0 0 0 rgba(37, 211, 102, 0);
-    }
-}
 
-/* ===== CORREÇÃO FILTRO MOBILE ===== */
-@media (max-width: 768px) {
-    .whatsapp-float {
-        width: 55px;
-        height: 55px;
-        bottom: 15px;
-        right: 15px;
+    // ✅ FETCH COM RETRY E PROTEÇÃO
+    async function fetchData(sheetName, tentativas = 2) {
+        const cacheKey = `cache_${sheetName}`;
+        const cacheTimeKey = `cache_time_${sheetName}`;
+        const cacheExpira = 2 * 60 * 60 * 1000; // 2 horas
+        
+        // Tenta cache primeiro
+        try {
+            const cachedData = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheTimeKey);
+            
+            if (cachedData && cachedTime) {
+                const tempoDecorrido = Date.now() - parseInt(cachedTime);
+                if (tempoDecorrido < cacheExpira) {
+                    return JSON.parse(cachedData);
+                }
+            }
+        } catch (e) {}
+
+        // Tenta buscar na API
+        for (let i = 0; i < tentativas; i++) {
+            try {
+                const url = `${API_BASE}?sheet=${encodeURIComponent(sheetName)}`;
+                const res = await fetch(url);
+                
+                if (res.status === 429) {
+                    const cachedData = localStorage.getItem(cacheKey);
+                    if (cachedData) return JSON.parse(cachedData);
+                    await new Promise(r => setTimeout(r, 2000));
+                    continue;
+                }
+                
+                if (!res.ok) {
+                    if (i < tentativas - 1) {
+                        await new Promise(r => setTimeout(r, 1000));
+                        continue;
+                    }
+                    return null;
+                }
+                
+                const data = await res.json();
+                
+                // Salva no cache
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify(data));
+                    localStorage.setItem(cacheTimeKey, Date.now().toString());
+                } catch (e) {}
+                
+                return data;
+                
+            } catch (err) {
+                if (i < tentativas - 1) {
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+        }
+        
+        // Se tudo falhar, tenta cache antigo
+        try {
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) return JSON.parse(cachedData);
+        } catch (e) {}
+        
+        return null;
+    }
+
+    const todosJogos = {
+        'A': [
+            { data: '11/06/2026 - 16:00', casa: 'México', fora: 'África do Sul' },
+            { data: '11/06/2026 - 23:00', casa: 'Coréia do Sul', fora: 'República Tcheca' },
+            { data: '18/06/2026 - 13:00', casa: 'República Tcheca', fora: 'África do Sul' },
+            { data: '18/06/2026 - 22:00', casa: 'México', fora: 'Coréia do Sul' },
+            { data: '24/06/2026 - 22:00', casa: 'República Tcheca', fora: 'México' },
+            { data: '24/06/2026 - 22:00', casa: 'África do Sul', fora: 'Coréia do Sul' }
+        ],
+        'B': [
+            { data: '12/06/2026 - 16:00', casa: 'Canadá', fora: 'Bósnia e Herzegovina' },
+            { data: '13/06/2026 - 16:00', casa: 'Catar', fora: 'Suíça' },
+            { data: '18/06/2026 - 16:00', casa: 'Suíça', fora: 'Bósnia e Herzegovina' },
+            { data: '18/06/2026 - 19:00', casa: 'Canadá', fora: 'Catar' },
+            { data: '24/06/2026 - 16:00', casa: 'Suíça', fora: 'Canadá' },
+            { data: '24/06/2026 - 16:00', casa: 'Bósnia e Herzegovina', fora: 'Catar' }
+        ],
+        'C': [
+            { data: '13/06/2026 - 19:00', casa: 'Brasil', fora: 'Marrocos' },
+            { data: '13/06/2026 - 22:00', casa: 'Haiti', fora: 'Escócia' },
+            { data: '19/06/2026 - 19:00', casa: 'Escócia', fora: 'Marrocos' },
+            { data: '19/06/2026 - 22:00', casa: 'Brasil', fora: 'Haiti' },
+            { data: '24/06/2026 - 19:00', casa: 'Escócia', fora: 'Brasil' },
+            { data: '24/06/2026 - 19:00', casa: 'Marrocos', fora: 'Haiti' }
+        ],
+        'D': [
+            { data: '12/06/2026 - 22:00', casa: 'Estados Unidos', fora: 'Paraguai' },
+            { data: '14/06/2026 - 01:00', casa: 'Austrália', fora: 'Turquia' },
+            { data: '20/06/2026 - 01:00', casa: 'Turquia', fora: 'Paraguai' },
+            { data: '19/06/2026 - 16:00', casa: 'Estados Unidos', fora: 'Austrália' },
+            { data: '25/06/2026 - 23:00', casa: 'Turquia', fora: 'Estados Unidos' },
+            { data: '25/06/2026 - 23:00', casa: 'Paraguai', fora: 'Austrália' }
+        ],
+        'E': [
+            { data: '14/06/2026 - 14:00', casa: 'Alemanha', fora: 'Curaçao' },
+            { data: '14/06/2026 - 20:00', casa: 'Costa do Marfim', fora: 'Equador' },
+            { data: '20/06/2026 - 17:00', casa: 'Alemanha', fora: 'Costa do Marfim' },
+            { data: '20/06/2026 - 21:00', casa: 'Equador', fora: 'Curaçao' },
+            { data: '25/06/2026 - 17:00', casa: 'Equador', fora: 'Alemanha' },
+            { data: '25/06/2026 - 17:00', casa: 'Curaçao', fora: 'Costa do Marfim' }
+        ],
+        'F': [
+            { data: '14/06/2026 - 17:00', casa: 'Holanda', fora: 'Japão' },
+            { data: '14/06/2026 - 23:00', casa: 'Suécia', fora: 'Tunísia' },
+            { data: '21/06/2026 - 01:00', casa: 'Tunísia', fora: 'Japão' },
+            { data: '20/06/2026 - 14:00', casa: 'Holanda', fora: 'Suécia' },
+            { data: '25/06/2026 - 20:00', casa: 'Japão', fora: 'Suécia' },
+            { data: '25/06/2026 - 20:00', casa: 'Tunísia', fora: 'Holanda' }
+        ],
+        'G': [
+            { data: '15/06/2026 - 16:00', casa: 'Bélgica', fora: 'Egito' },
+            { data: '15/06/2026 - 22:00', casa: 'Irã', fora: 'Nova Zelândia' },
+            { data: '21/06/2026 - 16:00', casa: 'Bélgica', fora: 'Irã' },
+            { data: '21/06/2026 - 22:00', casa: 'Nova Zelândia', fora: 'Egito' },
+            { data: '27/06/2026 - 00:00', casa: 'Egito', fora: 'Irã' },
+            { data: '27/06/2026 - 00:00', casa: 'Nova Zelândia', fora: 'Bélgica' }
+        ],
+        'H': [
+            { data: '15/06/2026 - 13:00', casa: 'Espanha', fora: 'Cabo Verde' },
+            { data: '15/06/2026 - 19:00', casa: 'Arábia Saudita', fora: 'Uruguai' },
+            { data: '21/06/2026 - 13:00', casa: 'Espanha', fora: 'Arábia Saudita' },
+            { data: '21/06/2026 - 19:00', casa: 'Uruguai', fora: 'Cabo Verde' },
+            { data: '26/06/2026 - 21:00', casa: 'Cabo Verde', fora: 'Arábia Saudita' },
+            { data: '26/06/2026 - 21:00', casa: 'Uruguai', fora: 'Espanha' }
+        ],
+        'I': [
+            { data: '16/06/2026 - 16:00', casa: 'França', fora: 'Senegal' },
+            { data: '16/06/2026 - 19:00', casa: 'Iraque', fora: 'Noruega' },
+            { data: '22/06/2026 - 18:00', casa: 'França', fora: 'Iraque' },
+            { data: '22/06/2026 - 21:00', casa: 'Noruega', fora: 'Senegal' },
+            { data: '26/06/2026 - 16:00', casa: 'Noruega', fora: 'França' },
+            { data: '26/06/2026 - 16:00', casa: 'Senegal', fora: 'Iraque' }
+        ],
+        'J': [
+            { data: '17/06/2026 - 01:00', casa: 'Áustria', fora: 'Jordânia' },
+            { data: '16/06/2026 - 22:00', casa: 'Argentina', fora: 'Argélia' },
+            { data: '22/06/2026 - 14:00', casa: 'Argentina', fora: 'Áustria' },
+            { data: '23/06/2026 - 00:00', casa: 'Jordânia', fora: 'Argélia' },
+            { data: '27/06/2026 - 23:00', casa: 'Argélia', fora: 'Áustria' },
+            { data: '27/06/2026 - 23:00', casa: 'Jordânia', fora: 'Argentina' }
+        ],
+        'K': [
+            { data: '17/06/2026 - 14:00', casa: 'Portugal', fora: 'RD do Congo' },
+            { data: '17/06/2026 - 23:00', casa: 'Uzbequistão', fora: 'Colômbia' },
+            { data: '23/06/2026 - 14:00', casa: 'Portugal', fora: 'Uzbequistão' },
+            { data: '23/06/2026 - 23:00', casa: 'Colômbia', fora: 'RD do Congo' },
+            { data: '27/06/2026 - 20:30', casa: 'Colômbia', fora: 'Portugal' },
+            { data: '27/06/2026 - 20:30', casa: 'RD do Congo', fora: 'Uzbequistão' }
+        ],
+        'L': [
+            { data: '17/06/2026 - 17:00', casa: 'Inglaterra', fora: 'Croácia' },
+            { data: '17/06/2026 - 20:00', casa: 'Gana', fora: 'Panamá' },
+            { data: '23/06/2026 - 17:00', casa: 'Inglaterra', fora: 'Gana' },
+            { data: '23/06/2026 - 20:00', casa: 'Panamá', fora: 'Croácia' },
+            { data: '27/06/2026 - 18:00', casa: 'Panamá', fora: 'Inglaterra' },
+            { data: '27/06/2026 - 18:00', casa: 'Croácia', fora: 'Gana' }
+        ]
+    };
+
+    function renderRanking(data) {
+        if (!data || data.length === 0) {
+            showError('Nenhum dado encontrado na aba PLACAR GERAL');
+            return;
+        }
+
+        const dados = data.filter(j => j.PLACAR && j.PLACAR !== 'PLACAR' && j.GERAL !== undefined);
+        dados.sort((a, b) => Number(b.GERAL || 0) - Number(a.GERAL || 0));
+        
+        let html = '<div id="ranking-grid">';
+        
+        dados.forEach((j, i) => {
+            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}º`;
+            const cls = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+            const total = Number(j.GERAL || 0);
+            
+            const pts20 = Number(j['VIT+EXATO +20'] || 0);
+            const pts15 = Number(j['VIT+1 PLACA +15'] || 0);
+            const pts10 = Number(j['VIT +10'] || 0);
+            const pts5 = Number(j['1 PLACAR +5'] || 0);
+            const zebra = Number(j['ZEBRA BONUS'] || 0);
+            const gols = Number(j['TOTAL DE GOLS +3'] || 0);
+            
+            html += `
+                <div class="card ${cls} clickable-card" data-participant="${j.PLACAR}">
+                    <div class="position">${medal}</div>
+                    <h2>${j.PLACAR}</h2>
+                    <h3>${total} pts</h3>
+                    <div class="details">
+                        <p><span>🎯 Placar Exato (20):</span> <strong>${pts20}</strong></p>
+                        <p><span>✅ Vencedor + 1 (15):</span> <strong>${pts15}</strong></p>
+                        <p><span>🏆 Só Vencedor (10):</span> <strong>${pts10}</strong></p>
+                        <p><span>⚽ Só 1 Placar (5):</span> <strong>${pts5}</strong></p>
+                        <p><span>🦓 Zebra Bônus(5):</span> <strong>${zebra}</strong></p>
+                        <p><span>⚽ Total de Gols(3):</span> <strong>${gols}</strong></p>
+                    </div>
+                    <div class="card-click-hint">👆 Clique para ver palpites</div>
+                </div>`;
+        });
+        html += '</div>';
+        contentEl.innerHTML = html;
+        
+        document.querySelectorAll('.clickable-card').forEach(card => {
+            card.addEventListener('click', () => {
+                irParaPalpitesDoParticipante(card.getAttribute('data-participant'));
+            });
+        });
+    }
+
+    async function irParaPalpitesDoParticipante(nomeParticipante) {
+        const chaveAba = nomeParaChave[nomeParticipante] || 
+                        nomeParaChave[nomeParticipante.toUpperCase()] ||
+                        Object.keys(participantesMap).find(chave => 
+                            participantesMap[chave].toUpperCase() === nomeParticipante.toUpperCase()
+                        );
+        
+        if (!chaveAba) {
+            alert(`Não foi possível encontrar os palpites de ${nomeParticipante}`);
+            return;
+        }
+        
+        currentView = 'palpites';
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btnPalpites.classList.add('active');
+        filterContainer.style.display = 'flex';
+        selectParticipant.parentElement.style.display = 'flex';
+        selectGroup.parentElement.style.display = 'flex';
+        selectParticipant.value = chaveAba;
+        
+        if (Object.keys(resultadosCache).length === 0) {
+            showLoading('⏳ Buscando resultados dos jogos...');
+            const dataJogos = await fetchData('Jogos');
+            if (dataJogos) resultadosCache = buscarResultados(dataJogos);
+        }
+        
+        showLoading(`⏳ Carregando ${participantesMap[chaveAba]}...`);
+        await carregarParticipante(chaveAba);
+        renderPalpites(chaveAba, selectGroup.value);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function buscarResultados(data) {
+        const mapa = {};
+        if (!data || data.length === 0) return mapa;
+        
+        data.forEach(row => {
+            if (!row.DATA_HORA || row.DATA_HORA.includes('GRUPO')) return;
+            
+            const timeCasa = row.CASA;
+            const timeFora = row.FORA;
+            if (!timeCasa || !timeFora) return;
+            
+            const placarCasa = row.PLACAR_CASA && String(row.PLACAR_CASA).trim() !== '' 
+                ? String(row.PLACAR_CASA).trim() : '-';
+            const placarFora = row.PLACAR_FORA && String(row.PLACAR_FORA).trim() !== '' 
+                ? String(row.PLACAR_FORA).trim() : '-';
+            
+            mapa[`${timeCasa}-${timeFora}`] = { casa: placarCasa, fora: placarFora };
+        });
+        
+        return mapa;
+    }
+
+    function renderJogos(filtroGrupo = 'todos') {
+        const grupos = filtroGrupo === 'todos' ? Object.keys(todosJogos).sort() : [filtroGrupo];
+        let html = '';
+        
+        grupos.forEach(grupo => {
+            const jogos = todosJogos[grupo];
+            html += `
+                <div class="group-section">
+                    <h2 class="group-title">🏆 Grupo ${grupo}</h2>
+                    <div class="results-container">
+                    <table class="games-table">
+                        <thead>
+                            <tr><th>Data / Hora</th><th>Jogo</th><th>Placar</th></tr>
+                        </thead><tbody>`;
+            
+            jogos.forEach(jogo => {
+                const resultado = resultadosCache[`${jogo.casa}-${jogo.fora}`];
+                let placarDisplay = '-';
+                if (resultado && resultado.casa !== '-' && resultado.fora !== '-') {
+                    placarDisplay = `${resultado.casa} x ${resultado.fora}`;
+                }
+                html += `
+                    <tr>
+                        <td class="date">${jogo.data}</td>
+                        <td class="teams">${jogo.casa} <span class="vs">x</span> ${jogo.fora}</td>
+                        <td class="result">${placarDisplay}</td>
+                    </tr>`;
+            });
+            
+            html += `</tbody></table></div></div>`;
+        });
+        
+        contentEl.innerHTML = html;
+    }
+
+    function getPontos(row) {
+        return Number(row['PONTUAÇAO'] || row['PONTUACAO'] || row.PONTUACAO || 0);
+    }
+
+    function calcularTotal(abreviacao) {
+        const dados = palpitesData[abreviacao];
+        if (!dados || dados.length === 0) return 0;
+        return dados.reduce((sum, row) => sum + getPontos(row), 0);
+    }
+
+    function calcularPosicao(abreviacao) {
+        const totalAtual = calcularTotal(abreviacao);
+        let posicao = 1;
+        Object.keys(participantesMap).forEach(abrev => {
+            if (abrev === abreviacao) return;
+            if (calcularTotal(abrev) > totalAtual) posicao++;
+        });
+        return posicao;
+    }
+
+    function normalizar(str) {
+        if (!str) return '';
+        return str.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function renderPalpites(participante, filtroGrupo) {
+        if (!participante || participante === '') {
+            contentEl.innerHTML = `<div class="no-data"><p>🎯 Selecione um participante</p></div>`;
+            return;
+        }
+
+        const dados = palpitesData[participante];
+        
+        if (!dados || dados.length === 0) {
+            if ((falhasCarregamento[participante] || 0) >= 3) {
+                contentEl.innerHTML = `
+                    <div class="no-data">
+                        <p>❌ Não foi possível carregar ${participantesMap[participante]}</p>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: var(--gold); border: none; border-radius: 8px; cursor: pointer;">
+                            🔄 Recarregar
+                        </button>
+                    </div>`;
+                return;
+            }
+            
+            contentEl.innerHTML = `<div class="no-data"><p>⏳ Carregando ${participantesMap[participante]}...</p></div>`;
+            
+            if (!carregandoAgora[participante]) {
+                carregarParticipante(participante).then(dados => {
+                    if (dados) renderPalpites(participante, filtroGrupo);
+                    else {
+                        falhasCarregamento[participante] = (falhasCarregamento[participante] || 0) + 1;
+                        renderPalpites(participante, filtroGrupo);
+                    }
+                });
+            }
+            return;
+        }
+
+        let jogosFiltrados = dados.filter(row => {
+            if (!row.DATA_HORA || row.DATA_HORA.includes('GRUPO')) return false;
+            if (filtroGrupo === 'todos') return true;
+            
+            const casaNorm = normalizar(row.CASA);
+            const foraNorm = normalizar(row.FORA);
+            const grupoJogo = Object.keys(todosJogos).find(grupo => 
+                todosJogos[grupo].some(j => 
+                    normalizar(j.casa) === casaNorm || normalizar(j.fora) === foraNorm
+                )
+            );
+            return grupoJogo === filtroGrupo;
+        });
+
+        const totalPontos = jogosFiltrados.reduce((sum, row) => sum + getPontos(row), 0);
+        const posicao = calcularPosicao(participante);
+        const totalParticipantes = Object.keys(participantesMap).length;
+        const medalhaPosicao = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : '';
+
+        let html = `
+            <div class="palpite-summary">
+                <h2>🎯 ${participantesMap[participante] || participante}</h2>
+                <div class="ranking-position">${medalhaPosicao} ${posicao}º de ${totalParticipantes}</div>
+                <div class="summary-stats">
+                    <div class="stat-box"><span class="stat-value">${totalPontos}</span><span class="stat-label">Total</span></div>
+                </div>
+            </div>
+            <div class="results-container">
+                <table class="predictions-table">
+                    <thead>
+                        <tr><th>Data</th><th>Jogo</th><th>Palpite</th><th>Real</th><th>Pts</th></tr>
+                    </thead><tbody>`;
+
+        jogosFiltrados.forEach(row => {
+            const palpite = `${row.PLACAR_CASA || '-'} x ${row.PLACAR_FORA || '-'}`;
+            const resultadoReal = resultadosCache[`${row.CASA}-${row.FORA}`];
+            const real = resultadoReal && resultadoReal.casa !== '-' 
+                ? `${resultadoReal.casa} x ${resultadoReal.fora}` : '-';
+            
+            const pontos = getPontos(row);
+            let classePalpite = '';
+            if (pontos === 20) classePalpite = 'correct';
+            else if (pontos > 0) classePalpite = 'partial';
+            else if (row.PLACAR_CASA && row.PLACAR_CASA !== '-') classePalpite = 'wrong';
+            
+            html += `
+                <tr>
+                    <td class="col-date">${row.DATA_HORA}</td>
+                    <td class="col-match">${row.CASA} x ${row.FORA}</td>
+                    <td class="prediction ${classePalpite}">${palpite}</td>
+                    <td>${real}</td>
+                    <td class="points ${pontos === 0 ? 'zero' : ''}">${pontos > 0 ? '+' + pontos : '-'}</td>
+                </tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+        contentEl.innerHTML = html;
+    }
+
+    async function carregarParticipante(abrev) {
+        if (palpitesData[abrev]) return palpitesData[abrev];
+        if (carregandoAgora[abrev]) return null;
+        if ((falhasCarregamento[abrev] || 0) >= 3) return null;
+        
+        carregandoAgora[abrev] = true;
+        
+        try {
+            let dados = await fetchData(abrev);
+            if (dados) {
+                dados = normalizarDados(dados, abrev);
+                palpitesData[abrev] = dados;
+                return dados;
+            }
+            falhasCarregamento[abrev] = (falhasCarregamento[abrev] || 0) + 1;
+            return null;
+        } finally {
+            carregandoAgora[abrev] = false;
+        }
+    }
+
+    async function carregarEmBackground() {
+        if (carregandoEmBackground) return;
+        carregandoEmBackground = true;
+        
+        const pendentes = Object.keys(participantesMap).filter(
+            abrev => !palpitesData[abrev] && (falhasCarregamento[abrev] || 0) < 3
+        );
+        
+        for (const abrev of pendentes) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await carregarParticipante(abrev);
+        }
+        
+        carregandoEmBackground = false;
+    }
+
+    function popularSelectParticipantes() {
+        const opcoes = Object.keys(participantesMap).map(abrev => 
+            `<option value="${abrev}">${participantesMap[abrev]}</option>`
+        ).join('');
+        selectParticipant.innerHTML = `<option value="">Selecione...</option>${opcoes}`;
+    }
+
+    btnRanking.addEventListener('click', async () => {
+        if (currentView === 'ranking') return;
+        currentView = 'ranking';
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btnRanking.classList.add('active');
+        filterContainer.style.display = 'none';
+        showLoading();
+        const data = await fetchData('PLACAR GERAL');
+        if (data) renderRanking(data);
+    });
+
+    btnJogos.addEventListener('click', async () => {
+        if (currentView === 'jogos') return;
+        currentView = 'jogos';
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btnJogos.classList.add('active');
+        filterContainer.style.display = 'flex';
+        selectParticipant.parentElement.style.display = 'none';
+        selectGroup.parentElement.style.display = 'flex';
+        showLoading();
+        const data = await fetchData('Jogos');
+        if (data) {
+            resultadosCache = buscarResultados(data);
+            renderJogos('todos');
+        }
+    });
+
+    btnPalpites.addEventListener('click', async () => {
+        if (currentView === 'palpites') return;
+        currentView = 'palpites';
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btnPalpites.classList.add('active');
+        filterContainer.style.display = 'flex';
+        selectParticipant.parentElement.style.display = 'flex';
+        selectGroup.parentElement.style.display = 'flex';
+        
+        if (Object.keys(resultadosCache).length === 0) {
+            showLoading('⏳ Buscando jogos...');
+            const dataJogos = await fetchData('Jogos');
+            if (dataJogos) resultadosCache = buscarResultados(dataJogos);
+        }
+        
+        if (selectParticipant.value) {
+            showLoading(`⏳ Carregando ${participantesMap[selectParticipant.value]}...`);
+            await carregarParticipante(selectParticipant.value);
+            renderPalpites(selectParticipant.value, selectGroup.value);
+        } else {
+            renderPalpites('', selectGroup.value);
+        }
+        
+        setTimeout(() => carregarEmBackground(), 2000);
+    });
+
+    if (btnRefresh) {
+        btnRefresh.addEventListener('click', async () => {
+            showLoading('🔄 Atualizando...');
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('cache_')) localStorage.removeItem(key);
+            });
+            palpitesData = {};
+            resultadosCache = {};
+            placarGeralCache = null;
+            
+            if (currentView === 'ranking') {
+                const data = await fetchData('PLACAR GERAL');
+                if (data) renderRanking(data);
+            } else if (currentView === 'jogos') {
+                const data = await fetchData('Jogos');
+                if (data) {
+                    resultadosCache = buscarResultados(data);
+                    renderJogos(selectGroup.value);
+                }
+            } else if (currentView === 'palpites') {
+                const dataJogos = await fetchData('Jogos');
+                if (dataJogos) resultadosCache = buscarResultados(dataJogos);
+                if (selectParticipant.value) {
+                    await carregarParticipante(selectParticipant.value);
+                    renderPalpites(selectParticipant.value, selectGroup.value);
+                }
+            }
+        });
+    }
+
+    selectParticipant.addEventListener('change', async () => {
+        if (currentView === 'palpites' && selectParticipant.value) {
+            showLoading(`⏳ Carregando ${participantesMap[selectParticipant.value]}...`);
+            await carregarParticipante(selectParticipant.value);
+            renderPalpites(selectParticipant.value, selectGroup.value);
+        }
+    });
+
+    selectGroup.addEventListener('change', () => {
+        if (currentView === 'palpites') {
+            renderPalpites(selectParticipant.value, selectGroup.value);
+        } else if (currentView === 'jogos') {
+            renderJogos(selectGroup.value);
+        }
+    });
+
+    popularSelectParticipantes();
+    btnJogos.click();
+
+    // Expõe variáveis para debug
+    window.palpitesData = palpitesData;
+    window.resultadosCache = resultadosCache;
+    window.todosJogos = todosJogos;
+    window.nomeParaChave = nomeParaChave;
+    window.participantesMap = participantesMap;
+});
+
+// ===== BOTÃO WHATSAPP FLUTUANTE ARRASTÁVEL =====
+(function() {
+    const whatsappBtn = document.getElementById('whatsapp-float');
+    if (!whatsappBtn) return;
+    
+    const LINK_GRUPO = 'https://chat.whatsapp.com/Ld5Tt3kvD240Dlq3YFV03I?s=cl&p=a&mlu=1&amv=0';
+    
+    let isDragging = false;
+    let hasMoved = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+    let clickStartTime = 0;
+    
+    // Carrega posição salva
+    const savedPosition = localStorage.getItem('whatsappBtnPosition');
+    if (savedPosition) {
+        try {
+            const pos = JSON.parse(savedPosition);
+            // Verifica se está dentro da tela
+            if (pos.left >= 0 && pos.top >= 0 && 
+                pos.left < window.innerWidth && pos.top < window.innerHeight) {
+                whatsappBtn.style.left = pos.left + 'px';
+                whatsappBtn.style.top = pos.top + 'px';
+                whatsappBtn.style.right = 'auto';
+                whatsappBtn.style.bottom = 'auto';
+            }
+        } catch (e) {
+            console.warn('Erro ao carregar posição do botão WhatsApp');
+        }
     }
     
-    .whatsapp-float svg {
-        width: 28px;
-        height: 28px;
+    // Salva posição
+    function savePosition() {
+        const rect = whatsappBtn.getBoundingClientRect();
+        localStorage.setItem('whatsappBtnPosition', JSON.stringify({
+            left: Math.round(rect.left),
+            top: Math.round(rect.top)
+        }));
     }
     
-    .whatsapp-tooltip {
-        display: none;
-    }
+    // ===== MOUSE (Desktop) =====
+    whatsappBtn.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        hasMoved = false;
+        clickStartTime = Date.now();
+        whatsappBtn.classList.add('dragging');
+        
+        const rect = whatsappBtn.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        whatsappBtn.style.left = rect.left + 'px';
+        whatsappBtn.style.top = rect.top + 'px';
+        whatsappBtn.style.right = 'auto';
+        whatsappBtn.style.bottom = 'auto';
+    });
     
-    /* ✅ CORREÇÃO DO FILTRO MOBILE */
-    .filter-container {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-        padding: 15px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+        }
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        // Limita dentro da tela
+        const btnWidth = whatsappBtn.offsetWidth;
+        const btnHeight = whatsappBtn.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - btnWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - btnHeight));
+        
+        whatsappBtn.style.left = newLeft + 'px';
+        whatsappBtn.style.top = newTop + 'px';
+    });
     
-    .filter-group {
-        width: 100% !important;
-    }
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        whatsappBtn.classList.remove('dragging');
+        
+        if (hasMoved) {
+            savePosition();
+        } else {
+            // Se não moveu, abre o link
+            window.open(LINK_GRUPO, '_blank', 'noopener,noreferrer');
+        }
+    });
     
-    .filter-group label {
-        font-size: 0.8rem !important;
-        margin-bottom: 5px !important;
-        display: block !important;
-    }
+    // ===== TOUCH (Celular) =====
+    whatsappBtn.addEventListener('touchstart', function(e) {
+        const touch = e.touches[0];
+        isDragging = true;
+        hasMoved = false;
+        clickStartTime = Date.now();
+        whatsappBtn.classList.add('dragging');
+        
+        const rect = whatsappBtn.getBoundingClientRect();
+        startX = touch.clientX;
+        startY = touch.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        whatsappBtn.style.left = rect.left + 'px';
+        whatsappBtn.style.top = rect.top + 'px';
+        whatsappBtn.style.right = 'auto';
+        whatsappBtn.style.bottom = 'auto';
+    }, { passive: true });
     
-    .filter-group select {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        padding: 10px 12px !important;
-        font-size: 0.95rem !important;
-        box-sizing: border-box !important;
-        -webkit-appearance: menulist !important;
-        appearance: menulist !important;
-    }
-}
-
-/* Responsivo - celular */
-@media (max-width: 768px) {
-    .whatsapp-float {
-        bottom: 15px;
-        right: 15px;
-    }
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+        }
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        const btnWidth = whatsappBtn.offsetWidth;
+        const btnHeight = whatsappBtn.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - btnWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - btnHeight));
+        
+        whatsappBtn.style.left = newLeft + 'px';
+        whatsappBtn.style.top = newTop + 'px';
+        
+        // Previne scroll da página enquanto arrasta
+        if (hasMoved) {
+            e.preventDefault();
+        }
+    }, { passive: false });
     
-    .whatsapp-link {
-        width: 55px;
-        height: 55px;
-    }
+    document.addEventListener('touchend', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        whatsappBtn.classList.remove('dragging');
+        
+        if (hasMoved) {
+            savePosition();
+        } else {
+            // Toque curto sem arrastar = abre o link
+            window.open(LINK_GRUPO, '_blank', 'noopener,noreferrer');
+        }
+    });
     
-    .whatsapp-link svg {
-        width: 28px;
-        height: 28px;
-    }
-    
-    .whatsapp-tooltip {
-        display: none;
-    }
-}
-
-/* ===== LOADING E ERROR ===== */
-.loading {
-    text-align: center;
-    padding: 60px 20px;
-    font-size: 1.5rem;
-    color: var(--gold-trophy);
-}
-
-.error {
-    text-align: center;
-    padding: 40px 20px;
-    font-size: 1.2rem;
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.1);
-    border-radius: 12px;
-    border: 2px solid #ff6b6b;
-}
-
-.no-data {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--white);
-    font-size: 1.3rem;
-    opacity: 0.8;
-}
-
-/* ===== RESPONSIVO - CELULAR ===== */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.5rem !important;
-        letter-spacing: 1px !important;
-    }
-
-    .toggle-buttons {
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .btn {
-        padding: 10px 14px !important;
-        font-size: 0.85rem !important;
-    }
-
-    .filter-container {
-        padding: 12px !important;
-        gap: 10px !important;
-    }
-
-    .filter-group select {
-        min-width: 150px !important;
-        font-size: 0.9rem !important;
-        padding: 8px 12px !important;
-    }
-
-    .group-title {
-        font-size: 1.5rem !important;
-        letter-spacing: 2px !important;
-    }
-
-    .results-container {
-        padding: 10px !important;
-        overflow-x: auto !important;
-    }
-
-    /* Tabela de jogos - mobile */
-    .games-table {
-        font-size: 0.85rem !important;
-        min-width: 100% !important;
-    }
-
-    .games-table th,
-    .games-table td {
-        padding: 10px 6px !important;
-        font-size: 0.8rem !important;
-    }
-
-    .games-table .date {
-        font-size: 0.75rem !important;
-        white-space: nowrap !important;
-    }
-
-    .games-table .teams {
-        font-size: 0.8rem !important;
-    }
-
-    .games-table .result {
-        font-size: 0.9rem !important;
-    }
-
-    /* Tabela de palpites - mobile */
-    .predictions-table {
-        font-size: 0.75rem !important;
-    }
-
-    .predictions-table th,
-    .predictions-table td {
-        padding: 8px 4px !important;
-        font-size: 0.7rem !important;
-    }
-
-    .predictions-table .col-date {
-        font-size: 0.7rem !important;
-    }
-
-    .predictions-table .col-match {
-        font-size: 0.75rem !important;
-    }
-
-    .predictions-table .prediction {
-        font-size: 0.8rem !important;
-        padding: 4px 8px !important;
-    }
-
-    .predictions-table .points {
-        font-size: 0.9rem !important;
-    }
-
-    /* Cards do ranking - mobile */
-    #ranking-grid {
-        grid-template-columns: 1fr !important;
-        gap: 15px !important;
-    }
-
-    .card {
-        padding: 20px !important;
-    }
-
-    .card h2 {
-        font-size: 1.2rem !important;
-    }
-
-    .card h3 {
-        font-size: 1.8rem !important;
-    }
-
-    .position {
-        font-size: 2rem !important;
-    }
-
-    /* Resumo de palpites - mobile */
-    .palpite-summary {
-        padding: 15px !important;
-    }
-
-    .palpite-summary h2 {
-        font-size: 1.3rem !important;
-    }
-
-    .summary-stats {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 8px !important;
-    }
-
-    .stat-box {
-        padding: 10px 8px !important;
-    }
-
-    .stat-box .stat-value {
-        font-size: 1.5rem !important;
-    }
-
-    .stat-box .stat-label {
-        font-size: 0.65rem !important;
-    }
-
-    .ranking-position {
-        font-size: 1rem !important;
-        padding: 10px 20px !important;
-    }
-}
-
-/* ===== CELULAR MUITO PEQUENO ===== */
-@media (max-width: 400px) {
-    h1 {
-        font-size: 1.2rem !important;
-    }
-
-    .btn {
-        padding: 8px 10px !important;
-        font-size: 0.75rem !important;
-    }
-
-    .games-table th,
-    .games-table td {
-        padding: 8px 4px !important;
-        font-size: 0.7rem !important;
-    }
-
-    .predictions-table th,
-    .predictions-table td {
-        padding: 6px 3px !important;
-        font-size: 0.65rem !important;
-    }
-
-    .summary-stats {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-}
+    // Duplo clique = resetar posição
+    whatsappBtn.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        localStorage.removeItem('whatsappBtnPosition');
+        whatsappBtn.style.left = '';
+        whatsappBtn.style.top = '';
+        whatsappBtn.style.right = '25px';
+        whatsappBtn.style.bottom = '25px';
+    });
+})();
