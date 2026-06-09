@@ -341,27 +341,43 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function buscarResultados(data) {
-        const mapa = {};
-        if (!data || data.length === 0) return mapa;
-        
-        data.forEach(row => {
-            if (!row.DATA_HORA || row.DATA_HORA.includes('GRUPO')) return;
-            
-            const timeCasa = row.CASA;
-            const timeFora = row.FORA;
-            if (!timeCasa || !timeFora) return;
-            
-            const placarCasa = row.PLACAR_CASA && String(row.PLACAR_CASA).trim() !== '' 
-                ? String(row.PLACAR_CASA).trim() : '-';
-            const placarFora = row.PLACAR_FORA && String(row.PLACAR_FORA).trim() !== '' 
-                ? String(row.PLACAR_FORA).trim() : '-';
-            
-            mapa[`${timeCasa}-${timeFora}`] = { casa: placarCasa, fora: placarFora };
-        });
-        
-        return mapa;
-    }
+function buscarResultados(data) {
+    const mapa = {};
+
+    if (!data || data.length === 0) return mapa;
+
+    data.forEach(row => {
+        if (!row.DATA_HORA || row.DATA_HORA.includes('GRUPO')) return;
+
+        const timeCasa = row.CASA;
+        const timeFora = row.FORA;
+
+        const placarCasa =
+            row.PLACAR_CASA === null ||
+            row.PLACAR_CASA === undefined ||
+            String(row.PLACAR_CASA).trim() === ''
+                ? '-'
+                : String(row.PLACAR_CASA).trim();
+
+        const placarFora =
+            row.PLACAR_FORA === null ||
+            row.PLACAR_FORA === undefined ||
+            String(row.PLACAR_FORA).trim() === ''
+                ? '-'
+                : String(row.PLACAR_FORA).trim();
+
+        mapa[`${timeCasa}-${timeFora}`] = {
+            casa: placarCasa,
+            fora: placarFora
+        };
+    });
+
+    console.log('MAPA RESULTADOS:', mapa);
+    return mapa;
+}
+
+
+
 
     function renderJogos(filtroGrupo = 'todos') {
         const grupos = filtroGrupo === 'todos' ? Object.keys(todosJogos).sort() : [filtroGrupo];
@@ -491,8 +507,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     </thead><tbody>`;
 
         jogosFiltrados.forEach(row => {
-            const palpite = `${row.PLACAR_CASA || '-'} x ${row.PLACAR_FORA || '-'}`;
-            const resultadoReal = resultadosCache[`${row.CASA}-${row.FORA}`];
+const palpite = `${
+    row.PLACAR_CASA !== null &&
+    row.PLACAR_CASA !== undefined &&
+    String(row.PLACAR_CASA).trim() !== ''
+        ? row.PLACAR_CASA
+        : '-'
+} x ${
+    row.PLACAR_FORA !== null &&
+    row.PLACAR_FORA !== undefined &&
+    String(row.PLACAR_FORA).trim() !== ''
+        ? row.PLACAR_FORA
+        : '-'
+}`;            const resultadoReal = resultadosCache[`${row.CASA}-${row.FORA}`];
             const real = resultadoReal && resultadoReal.casa !== '-' 
                 ? `${resultadoReal.casa} x ${resultadoReal.fora}` : '-';
             
@@ -500,8 +527,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let classePalpite = '';
             if (pontos === 20) classePalpite = 'correct';
             else if (pontos > 0) classePalpite = 'partial';
-            else if (row.PLACAR_CASA && row.PLACAR_CASA !== '-') classePalpite = 'wrong';
-            
+else if (
+    row.PLACAR_CASA !== null &&
+    row.PLACAR_CASA !== undefined &&
+    row.PLACAR_CASA !== '-'
+) {
+    classePalpite = 'wrong';
+}            
             html += `
                 <tr>
                     <td class="col-date">${row.DATA_HORA}</td>
@@ -660,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     popularSelectParticipantes();
-    btnRanking.click();
+    btnJogos.click();
 
     // Expõe variáveis para debug
     window.palpitesData = palpitesData;
@@ -669,3 +701,177 @@ document.addEventListener('DOMContentLoaded', () => {
     window.nomeParaChave = nomeParaChave;
     window.participantesMap = participantesMap;
 });
+
+// ===== BOTÃO WHATSAPP FLUTUANTE ARRASTÁVEL =====
+(function() {
+    const whatsappBtn = document.getElementById('whatsapp-float');
+    if (!whatsappBtn) return;
+    
+    const LINK_GRUPO = 'https://chat.whatsapp.com/Ld5Tt3kvD240Dlq3YFV03I?s=cl&p=a&mlu=1&amv=0';
+    
+    let isDragging = false;
+    let hasMoved = false;
+    let startX, startY;
+    let initialLeft, initialTop;
+    let clickStartTime = 0;
+    
+    // Carrega posição salva
+    const savedPosition = localStorage.getItem('whatsappBtnPosition');
+    if (savedPosition) {
+        try {
+            const pos = JSON.parse(savedPosition);
+            // Verifica se está dentro da tela
+            if (pos.left >= 0 && pos.top >= 0 && 
+                pos.left < window.innerWidth && pos.top < window.innerHeight) {
+                whatsappBtn.style.left = pos.left + 'px';
+                whatsappBtn.style.top = pos.top + 'px';
+                whatsappBtn.style.right = 'auto';
+                whatsappBtn.style.bottom = 'auto';
+            }
+        } catch (e) {
+            console.warn('Erro ao carregar posição do botão WhatsApp');
+        }
+    }
+    
+    // Salva posição
+    function savePosition() {
+        const rect = whatsappBtn.getBoundingClientRect();
+        localStorage.setItem('whatsappBtnPosition', JSON.stringify({
+            left: Math.round(rect.left),
+            top: Math.round(rect.top)
+        }));
+    }
+    
+    // ===== MOUSE (Desktop) =====
+    whatsappBtn.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        hasMoved = false;
+        clickStartTime = Date.now();
+        whatsappBtn.classList.add('dragging');
+        
+        const rect = whatsappBtn.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        whatsappBtn.style.left = rect.left + 'px';
+        whatsappBtn.style.top = rect.top + 'px';
+        whatsappBtn.style.right = 'auto';
+        whatsappBtn.style.bottom = 'auto';
+    });
+    
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+        }
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        // Limita dentro da tela
+        const btnWidth = whatsappBtn.offsetWidth;
+        const btnHeight = whatsappBtn.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - btnWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - btnHeight));
+        
+        whatsappBtn.style.left = newLeft + 'px';
+        whatsappBtn.style.top = newTop + 'px';
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        whatsappBtn.classList.remove('dragging');
+        
+        if (hasMoved) {
+            savePosition();
+        } else {
+            // Se não moveu, abre o link
+            window.open(LINK_GRUPO, '_blank', 'noopener,noreferrer');
+        }
+    });
+    
+    // ===== TOUCH (Celular) =====
+    whatsappBtn.addEventListener('touchstart', function(e) {
+        const touch = e.touches[0];
+        isDragging = true;
+        hasMoved = false;
+        clickStartTime = Date.now();
+        whatsappBtn.classList.add('dragging');
+        
+        const rect = whatsappBtn.getBoundingClientRect();
+        startX = touch.clientX;
+        startY = touch.clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+        
+        whatsappBtn.style.left = rect.left + 'px';
+        whatsappBtn.style.top = rect.top + 'px';
+        whatsappBtn.style.right = 'auto';
+        whatsappBtn.style.bottom = 'auto';
+    }, { passive: true });
+    
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+        }
+        
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+        
+        const btnWidth = whatsappBtn.offsetWidth;
+        const btnHeight = whatsappBtn.offsetHeight;
+        
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - btnWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - btnHeight));
+        
+        whatsappBtn.style.left = newLeft + 'px';
+        whatsappBtn.style.top = newTop + 'px';
+        
+        // Previne scroll da página enquanto arrasta
+        if (hasMoved) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    document.addEventListener('touchend', function() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        whatsappBtn.classList.remove('dragging');
+        
+        if (hasMoved) {
+            savePosition();
+        } else {
+            // Toque curto sem arrastar = abre o link
+            window.open(LINK_GRUPO, '_blank', 'noopener,noreferrer');
+        }
+    });
+    
+    // Duplo clique = resetar posição
+    whatsappBtn.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        localStorage.removeItem('whatsappBtnPosition');
+        whatsappBtn.style.left = '';
+        whatsappBtn.style.top = '';
+        whatsappBtn.style.right = '25px';
+        whatsappBtn.style.bottom = '25px';
+    });
+})();
